@@ -6,7 +6,7 @@ import { Events } from './types'
 const timeoutMap: Record<string, NodeJS.Timeout> = {}
 
 io.on('connection', (socket) => {
-	socket.once('create_room', ({ roomId, crosswordId }) => {
+	socket.once('create_room', ({ roomId, crosswordId }, cb) => {
 		console.log('Room created:', roomId, crosswordId)
 		const room = new Room(io, roomId, crosswordId)
 		RoomManager.set(roomId, room)
@@ -14,6 +14,7 @@ io.on('connection', (socket) => {
 			room.cleanup()
 			RoomManager.delete(roomId)
 		}, 10000)
+		cb(true)
 	})
 
 	socket.once('join_room', ({ roomId, player }: Events.Connect, cb) => {
@@ -34,7 +35,6 @@ io.on('connection', (socket) => {
 
 		let room = RoomManager.get(roomId)
 		if (!room) {
-			console.log('Room does not exist:', roomId)
 			return cb(false)
 		}
 
